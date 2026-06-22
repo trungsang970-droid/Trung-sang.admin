@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proxy VIP V2 - Dịch vụ nhanh ổn định</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#7c3aed',
+                        accent: '#0ea5e9',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        dark: '#0f172a',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass {
+                background: rgba(255, 255, 255, 0.85);
+                backdrop-filter: blur(16px);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+            }
+            .text-shadow {
+                text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            }
+            .hover-up {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .hover-up:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+            }
+            .fade-in {
+                animation: fadeIn 0.5s ease forwards;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 min-h-screen text-dark">
+
+    <!-- Thông báo hệ thống -->
+    <div id="thongBao" class="fixed top-5 right-5 z-50 transition-transform duration-300 translate-x-96 max-w-sm w-full"></div>
+
+    <!-- Màn hình Đăng ký / Đăng nhập -->
+    <div id="manHinhDangNhap" class="fixed inset-0 z-40 bg-gradient-to-br from-primary/90 to-secondary/95 flex items-center justify-center p-4 fade-in">
+        <div class="glass rounded-3xl p-8 w-full max-w-md shadow-2xl">
+            <h2 class="text-3xl font-bold text-center text-primary mb-8 text-shadow">PROXY VIP V2</h2>
+
+            <!-- Form Đăng nhập -->
+            <div id="formDangNhap" class="fade-in">
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tên tài khoản</label>
+                    <input type="text" id="tenDangNhap" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-transparent transition-all" placeholder="Nhập tên tài khoản">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mật khẩu</label>
+                    <input type="password" id="matKhauDangNhap" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-transparent transition-all" placeholder="Nhập mật khẩu">
+                </div>
+                <button onclick="xuLyDangNhap()" class="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all mb-5">Đăng nhập</button>
+                <p class="text-center text-gray-600">Chưa có tài khoản? <a href="#" onclick="chuyenForm('dangky')" class="text-secondary font-bold hover:underline">Đăng ký ngay</a></p>
+            </div>
+
+            <!-- Form Đăng ký -->
+            <div id="formDangKy" class="hidden fade-in">
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tên tài khoản</label>
+                    <input type="text" id="tenDangKy" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary/60 focus:border-transparent transition-all" placeholder="Không được trùng tên đã có">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mật khẩu</label>
+                    <input type="password" id="matKhauDangKy" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-secondary/60 focus:border-transparent transition-all" placeholder="Đặt mật khẩu an toàn">
+                </div>
+                <button onclick="xuLyDangKy()" class="w-full bg-secondary hover:bg-secondary/90 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all mb-5">Tạo tài khoản</button>
+                <p class="text-center text-gray-600">Đã có tài khoản? <a href="#" onclick="chuyenForm('dangnhap')" class="text-primary font-bold hover:underline">Đăng nhập</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nội dung chính sau khi đăng nhập -->
+    <div id="noiDungChinh" class="hidden max-w-7xl mx-auto px-4 py-10 fade-in">
+
+        <!-- Nút hỗ trợ -->
+        <button onclick="lienHeHoTro()" class="fixed bottom-8 left-8 z-30 bg-danger hover:bg-danger/90 text-white w-14 h-14 rounded-full shadow-xl hover:shadow-2xl flex items-center justify-center text-xl transition-all hover:scale-105">
+            <i class="fa fa-headphones"></i>
+        </button>
+
+        <!-- Nút vào Bảo mật -->
+        <button onclick="moDangNhapBaoMat()" class="fixed top-8 right-8 z-30 bg-dark/80 hover:bg-dark text-white px-5 py-2.5 rounded-xl text-sm font-medium shadow-lg hover:shadow-xl transition-all">
+            <i class="fa fa-shield mr-1"></i> Bảo mật
+        </button>
+
+        <!-- Thông tin tài khoản -->
+        <div class="bg-white rounded-2xl shadow-xl p-7 mb-10 hover-up">
+            <div class="flex flex-wrap justify-between items-center gap-5">
+                <div>
+                    <h3 class="text-xl text-gray-700">Chào bạn <span id="tenNguoiDung" class="font-bold text-primary text-2xl"></span></h3>
+                    <p class="text-gray-600 mt-2">Số dư tài khoản: <span id="soDuHienTai" class="text-3xl font-bold text-success">0đ</span></p>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="moFormNapTien()" class="bg-success hover:bg-success/90 text-white px-6 py-2.5 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all">
+                        <i class="fa fa-credit-card mr-2"></i> Nạp tiền
+                    </button>
+                    <button onclick="dangXuat()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-5 py-2.5 rounded-xl font-medium transition-all">
+                        <i class="fa fa-sign-out mr-1"></i> Đăng xuất
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danh sách gói Proxy -->
+        <div class="mb-14">
+            <h2 class="text-4xl font-bold text-center mb-12 text-shadow text-gray-800">PROXY VIP V2</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Gói Ngày -->
+                <div class="bg-white rounded-2xl shadow-lg hover-up p-7 border-t-4 border-primary">
+                    <h3 class="text-2xl font-bold text-center mb-4 text-gray-800">Gói Ngày</h3>
+                    <p class="text-4xl font-bold text-center text-primary mb-6">30.000đ</p>
+                    <ul class="space-y-3 mb-8 text-gray-600">
+                        <li><i class="fa fa-check-circle text-success mr-2"></i>Thời hạn: 24 giờ</li>
+                        <li><i class="fa fa-check-circle text-success mr-2"></i>Tốc độ ổn định cao</li>
+                        <li><i class="fa fa-check-circle text-success mr-2"></i>Hỗ trợ 24/7</li>
+                    </ul>
+                    <button onclick="muaGoi('ngay', 30000)" class="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all">Mua ngay</button>
+                </div>
+
+                <!-- Gói Tuần -->
+                <div class="bg-white rounded-2xl shadow-xl hover-up p-7 border-t-4 border-secondary transform scale-[1.03] relative z-10">
+                    <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-secondary text-white px-5 py-1 rounded-full text-sm font-medium">Phổ biến nhất</span>
+                    <h3 class="text-2xl font-bold text-center mb-4 text-gray-800">Gói Tuần</h3>
+                    <p class="text-4xl font-bold text-center text-secondary mb-6">125.000đ</p>
+                    <ul class="space-y-3 mb-8 text-gray-600">
+                        <li><i class="fa fa-check-circle text-success mr-2"></i>Thời hạn: 7 ngày</li>
+                        <li><i class="fa fa-check-circle text-success mr-2"></i>Tốc độ cao nhất</li>
+                        <li><i class="fa fa-check-circle text-success mr-2"></i>Ưu tiên hỗ trợ</li>
+                    </ul>
+                    <button onclick="muaGoi('tuan', 125000)" class="w-full bg-secondary hover:bg-secondary/90 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all">Mua ngay</button>
+                </div>
+
+                <!-- Gói Tháng -->
+                <div class="bg-white rounded-2xl shadow-lg hover-up p-7 border-t-4 border-accent">
+                    <h3 class="text-2xl font-bold text-center mb-4 text-gray-800">Gói Tháng</h3>
+                    <p class="text-4xl font-bold text-center text-accent mb-6">250.000đ</p>
+                    <ul class="space-y-3 mb-8 text-gray-600">
+                        <li><i class="fa fa-check-circle text-success mr-2"></i>Thời hạn: 30 ngày</li>
+                        <li><i class="fa fa-check-circle text-success mr-2"></i>Độ ổn định tuyệt đối</li>
+                        <li><i class="fa fa-check-circle text-success mr-2"></i>Hỗ trợ đặc biệt</li>
+                    </ul>
+                    <button onclick="muaGoi('thang', 250000)" class="w-full bg-accent hover:bg-accent/90 text-white py-3 rounded-xl font-semibold shadow-md hover:shadow-lg transition-all">Mua ngay</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lịch sử & Top người dùng -->
+        <div class="grid md:grid-cols-2 gap-8 mb-10">
+            <div class="bg-white rounded-2xl shadow-lg hover-up p-6">
+                <h3 class="text-xl font-semibold mb-5 border-b pb-3 text-gray-800">📋 Lịch sử giao dịch & Key</h3>
+                <div id="khungLichSu" class="max-h-72 overflow-y-auto text-sm pr-2">
+                    <p class="text-gray-500 text-center py-8">Chưa có giao dịch nào</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg hover-up p-6">
+                <h3 class="text-xl font-semibold mb-5 border-b pb-3 text-gray-800">🏆 Top người dùng</h3>
+                <div id="khungTop" class="space-y-3 text-sm">
+                    <p class="text-gray-500 text-center py-8">Chưa có dữ liệu</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nạp tiền -->
+    <div id="modalNapTien" class="fixed inset-0 bg-black/65 z-40 hidden flex items-center justify-center p-4 fade-in">
+        <div class="glass rounded-3xl p-7 w-full max-w-md shadow-2xl">
+            <h3 class="text-2xl font-bold text-center mb-6 text-gray-800">Nạp tiền vào tài khoản</h3>
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Số tiền muốn nạp (tối thiểu 40.000đ)</label>
+                <input type="number" id="soTienNap" min="40000" step="1000" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/60" placeholder="Ví dụ: 50000">
+            </div>
+            <div class="bg-blue-50 p-5 rounded-xl mb-5 border border-blue-100">
+                <p class="font-semibold text-gray-700 mb-3">Thông tin chuyển khoản:</p>
+                <div class="text-left space-y-2">
+                    <p><strong>Ngân hàng:</strong> MB Bank</p>
+                    <p><strong>Số tài khoản:</strong> <span class="font-mono text-lg font-bold">0372822927</span></p>
+                    <p><strong>Chủ tài khoản:</strong> <span class="font-medium">TRAN TRUNG SANG</span></p>
+                    <p><strong>Nội dung:</strong> <span id="noiDungCK" class="font-bold text-primary">Tên tài khoản của bạn</span></p>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="xacNhanDaChuyenTien()" class="flex-1 bg-success hover:bg-success/90 text-white py-2.5 rounded-xl font-medium shadow-md hover:shadow-lg transition-all">Xác nhận đã chuyển</button>
+                <button onclick="dongModal('modalNapTien')" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2.5 rounded-xl font-medium transition-all">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Đăng nhập Bảo mật - Đã ẩn mật khẩu -->
+    <div id="modalDangNhapBaoMat" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 fade-in">
+        <div class="glass rounded-3xl p-7 w-full max-w-sm shadow-2xl">
+            <h3 class="text-2xl font-bold text-center mb-6 text-gray-800">Truy cập Bảo mật</h3>
+            <!-- Thay đổi type="password" để ẩn ký tự khi nhập -->
+            <input type="password" id="matKhauBaoMat" class="w-full px-4 py-3 border border-gray-300 rounded-xl mb-5 focus:outline-none focus:ring-2 focus:ring-dark/60" placeholder="Nhập mật khẩu truy cập">
+            <button onclick="kiemTraDangNhapBaoMat()" class="w-full bg-dark hover:bg-dark/90 text-white py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all mb-3">Vào hệ thống</button>
+            <button onclick="dongModal('modalDangNhapBaoMat')" class="w-full bg-gray-300 hover:bg-gray-400 text-gray-700 py-2.5 rounded-xl transition-all">Đóng</button>
+        </div>
+    </div>
+
+    <!-- Trang Bảo mật / Quản lý -->
+    <div id="trangBaoMat" class="hidden max-w-7xl mx-auto px-4 py-10 fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl p-8">
+            <div class="flex justify-between items-center mb-8 border-b pb-5">
+                <h2 class="text-3xl font-bold text-gray-800">🔒 TRANG BẢO MẬT - QUẢN LÝ</h2>
+                <button onclick="thoatBaoMat()" class="bg-danger hover:bg-danger/90 text-white px-5 py-2 rounded-xl font-medium shadow-md hover:shadow-lg transition-all">Thoát</button>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Quản lý nạp tiền -->
+                <div class="bg-gray-50 rounded-xl p-5 shadow-inner">
+                    <h3 class="text-xl font-semibold mb-5 text-gray-800">💰 Yêu cầu nạp tiền chờ xác nhận</h3>
+                    <div id="danhSachYeuCauNap" class="space-y-3">
+                        <p class="text-gray-500 text-center py-6">Không có yêu cầu mới</p>
+                    </div>
+                </div>
+                <!-- Quản lý đơn hàng & Gửi Key -->
+                <div class="bg-gray-50 rounded-xl p-5 shadow-inner">
+                    <h3 class="text-xl font-semibold mb-5 text-gray-800">🔑 Đơn hàng & Gửi Key</h3>
+                    <div id="danhSachDonHang" class="space-y-3">
+                        <p class="text-gray-500 text-center py-6">Chưa có đơn hàng chờ gửi key</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chân trang -->
+    <footer class="bg-dark text-white py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-lg">© 2026 Proxy VIP V2 - Dịch vụ uy tín, ổn định</p>
+            <p class="text-gray-400 mt-2">Hỗ trợ kỹ thuật: Zalo 0372822927</p>
+        </div>
+    </footer>
+
+    <script>
+        // Dữ liệu hệ thống
+        let danhSachTaiKhoan = JSON.parse(localStorage.getItem('proxyUsers')) || [];
+        let lichSuGiaoDich = JSON.parse(localStorage.getItem('proxyHistory')) || [];
+        let yeuCauNap = JSON.parse(localStorage.getItem('proxyDeposit')) || [];
+        let donHang = JSON.parse(localStorage.getItem('proxyOrders')) || [];
+        let nguoiDungHienTai = null;
+        // Vẫn giữ nguyên mật khẩu truy cập
+        const MAT_KHAU_BAO_MAT = "DHFHVNSI";
+
+        // Hiển thị thông báo
+        function hienThongBao(noiDung, loai = 'thanhcong') {
+            const khung = document.getElementById('thongBao');
+            const mau = loai === 'thanhcong' ? 'bg-success' : loai === 'canhbao' ? 'bg-warning' : 'bg-danger';
+            khung.innerHTML = `<div class="${mau} text-white p-4 rounded-xl shadow-lg">${noiDung}</div>`;
+            khung.classList.remove('translate-x-96');
+            setTimeout(() => khung.classList.add('translate-x-96'), 3500);
+        }
+
+        // Chuyển đổi form
+        function chuyenForm(loai) {
+            document.getElementById('formDangNhap').classList.toggle('hidden', loai !== 'dangnhap');
+            document.getElementById('formDangKy').classList.toggle('hidden', loai !== 'dangky');
+        }
+
+        // Mở/đóng modal
+        function moModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function dongModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // Đăng ký tài khoản
+        function xuLyDangKy() {
+            const ten = document.getElementById('tenDangKy').value.trim();
+            const mk = document.getElementById('matKhauDangKy').value.trim();
+            if (!ten || !mk) return hienThongBao('Vui lòng điền đủ tên và mật khẩu', 'loi');
+            if (danhSachTaiKhoan.find(u => u.ten === ten)) return hienThongBao('Tên tài khoản đã tồn tại! Chọn tên khác', 'loi');
+            
+            danhSachTaiKhoan.push({ ten, mk, soDu: 0, tongChi: 0, keys: [] });
+            localStorage.setItem('proxyUsers', JSON.stringify(danhSachTaiKhoan));
+            hienThongBao('Tạo tài khoản thành công! Đăng nhập ngay');
+            chuyenForm('dangnhap');
+        }
+
+        // Đăng nhập
+        function xuLyDangNhap() {
+            const ten = document.getElementById('tenDangNhap').value.trim();
+            const mk = document.getElementById('matKhauDangNhap').value.trim();
+            const tk = danhSachTaiKhoan.find(u => u.ten === ten && u.mk === mk);
+            if (!tk) return hienThongBao('Tên hoặc mật khẩu không chính xác', 'loi');
+            
+            nguoiDungHienTai = tk;
+            document.getElementById('tenNguoiDung').textContent = tk.ten;
+            document.getElementById('soDuHienTai').textContent = `${tk.soDu.toLocaleString('vi-VN')}đ`;
+            document.getElementById('noiDungCK').textContent = ten;
+            document.getElementById('manHinhDangNhap').classList.add('hidden');
+            document.getElementById('noiDungChinh').classList.remove('hidden');
+            capNhatLichSu();
+            capNhatTop();
+        }
+
+        // Đăng xuất
+        function dangXuat() {
+            nguoiDungHienTai = null;
+            document.getElementById('noiDungChinh').classList.add('hidden');
+            document.getElementById('trangBaoMat').classList.add('hidden');
+            document.getElementById('manHinhDangNhap').classList.remove('hidden');
+        }
+
+        // Mở form nạp tiền
+        function moFormNapTien() {
+            document.getElementById('soTienNap').value = '';
+            moModal('modalNapTien');
+        }
+
+        // Xác nhận nạp tiền
+        function xacNhanDaChuyenTien() {
+            const tien = parseInt(document.getElementById('soTienNap').value);
+            if (!tien || tien < 40000) return hienThongBao('Số tiền tối thiểu là 40.000đ', 'canhbao');
+            yeuCauNap.push({ id: Date.now(), ten: nguoiDungHienTai.ten, soTien: tien, trangThai: 'cho', thoiGian: new Date().toLocaleString('vi-VN') });
+            localStorage.setItem('proxyDeposit', JSON.stringify(yeuCauNap));
+            dongModal('modalNapTien');
+            hienThongBao('Đã gửi yêu cầu! Chờ admin xác nhận');
+        }
+
+        // Mua gói
+        function muaGoi(loai, gia) {
+            if (nguoiDungHienTai.soDu < gia) return hienThongBao('Số dư không đủ, vui lòng nạp thêm tiền', 'loi');
+            hienThongBao('Đang xử lý đơn hàng... Vui lòng chờ 1-5 phút');
+            
+            setTimeout(() => {
+                nguoiDungHienTai.soDu -= gia;
+                nguoiDungHienTai.tongChi += gia;
+                donHang.push({ id: Date.now(), ten: nguoiDungHienTai.ten, loaiGoi: loai, gia: gia, trangThai: 'chua_gui', thoiGian: new Date().toLocaleString('vi-VN') });
+                lichSuGiaoDich.unshift({ ten: nguoiDungHienTai.ten, hanhDong: `Mua gói ${loai}`, soTien: -gia, thoiGian: new Date().toLocaleString('vi-VN') });
+                localStorage.setItem('proxyUsers', JSON.stringify(danhSachTaiKhoan));
+                localStorage.setItem('proxyHistory', JSON.stringify(lichSuGiaoDich));
+                localStorage.setItem('proxyOrders', JSON.stringify(donHang));
+                document.getElementById('soDuHienTai').textContent = `${nguoiDungHienTai.soDu.toLocaleString('vi-VN')}đ`;
+                capNhatLichSu();
+                capNhatTop();
+                hienThongBao('Đơn hàng thành công! Admin sẽ gửi key sớm nhất');
+            }, Math.floor(Math.random() * 240000) + 60000);
+        }
+
+        // Cập nhật lịch sử + key
+        function capNhatLichSu() {
+            const ds = lichSuGiaoDich.filter(i => i.ten === nguoiDungHienTai.ten);
+            const khung = document.getElementById('khungLichSu');
+            if (ds.length === 0) {
+                khung.innerHTML = '<p class="text-gray-500 text-center py-8">Chưa có giao dịch nào</p>';
+                return;
+            }
+            khung.innerHTML = ds.map(i => {
+                const keyInfo = nguoiDungHienTai.keys?.find(k => k.loai === i.hanhDong.replace('Mua gói ', ''))?.key || 'Chưa nhận key';
+                return `
+                <div class="border-b border-gray-100 py-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 text-xs">${i.thoiGian}</span>
+                        <span class="font-medium">${i.hanhDong}</span>
+                        <span class="font-bold ${i.soTien > 0 ? 'text-success' : 'text-danger'}">${Math.abs(i.soTien).toLocaleString('vi-VN')}đ</span>
+                    </div>
+                    <p class="text-sm mt-1"><strong>Key:</strong> <span class="font-mono text-primary">${keyInfo}</span></p>
+                </div>`;
+            }).join('');
+        }
+
+        // Cập nhật top người dùng
+        function capNhatTop() {
+            const ds = [...danhSachTaiKhoan].sort((a,b) => b.tongChi - a.tongChi).slice(0,5);
+            const khung = document.getElementById('khungTop');
+            if (ds.length === 0) {
+                khung.innerHTML = '<p class="text-gray-500 text-center py-8">Chưa có dữ liệu</p>';
+                return;
+            }
+            khung.innerHTML = ds.map((u, idx) => `
+                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-all">
+                    <span class="font-medium">${idx+1}. ${u.ten}</span>
+                    <span class="font-bold text-success">${u.tongChi.toLocaleString('vi-VN')}đ</span>
+                </div>`).join('');
+        }
+
+        // Hỗ trợ
+        function lienHeHoTro() {
+            alert('Gặp vấn đề? Liên hệ Zalo: 0372822927');
+        }
+
+        // Truy cập Bảo mật
+        function moDangNhapBaoMat() { moModal('modalDangNhapBaoMat'); }
+        function kiemTraDangNhapBaoMat() {
+            const mk = document.getElementById('matKhauBaoMat').value;
+            if (mk !== MAT_KHAU_BAO_MAT) return hienThongBao('Mật khẩu không đúng! Không thể truy cập', 'loi');
+            dongModal('modalDangNhapBaoMat');
+            document.getElementById('noiDungChinh').classList.add('hidden');
+            document.getElementById('trangBaoMat').classList.remove('hidden');
+            taiDuLieuBaoMat();
+        }
+        function thoatBaoMat() {
+            document.getElementById('trangBaoMat').classList.add('hidden');
+            document.getElementById('manHinhDangNhap').classList.remove('hidden');
+        }
+        function taiDuLieuBaoMat() {
+            // Hiển thị yêu cầu nạp tiền
+            const dsNap = yeuCauNap.filter(i => i.trangThai === 'cho');
+            document.getElementById('danhSachYeuCauNap').innerHTML = dsNap.length ? dsNap.map(i => `
+                <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-warning">
+                    <p><strong>Tài khoản:</strong> ${i.ten}</p>
+                    <p><strong>Số tiền:</strong> ${i.soTien.toLocaleString('vi-VN')}đ</p>
+                    <button onclick="xacNhanNap(${i.id})" class="mt-2 bg-success text-white px-3 py-1 rounded text-sm hover:bg-success/90">Xác nhận cộng tiền</button>
+                </div>`).join('') : '<p class="text-gray-500 text-center py-6">Không có yêu cầu mới</p>';
+            
+            // Hiển thị đơn hàng chờ gửi key
+            const dsDon = donHang.filter(i => i.trangThai === 'chua_gui');
+            document.getElementById('danhSachDonHang').innerHTML = dsDon.length ? dsDon.map(i => `
+                <div class="bg-white p-3 rounded-lg shadow-sm border-l-4 border-primary">
+                    <p><strong>Tên người mua:</strong> ${i.ten}</p>
+                    <p><strong>Gói đã mua:</strong> ${i.loaiGoi}</p>
+                    <input type="text" id="key_${i.id}" placeholder="Nhập key gửi cho người dùng" class="w-full border rounded p-2 my-2 text-sm">
+                    <button onclick="guiKey(${i.id})" class="bg-primary text-white px-3 py-1 rounded text-sm hover:bg-primary/90">Gửi key</button>
+                </div>`).join('') : '<p class="text-gray-500 text-center py-6">Không có đơn hàng chờ gửi key</p>';
+        }
+        function xacNhanNap(id) {
+            const yeuCau = yeuCauNap.find(i => i.id === id);
+            const tk = danhSachTaiKhoan.find(u => u.ten === yeuCau.ten);
+            tk.soDu += yeuCau.soTien;
+            yeuCau.trangThai = 'da_xac_nhan';
+            lichSuGiaoDich.unshift({ ten: yeuCau.ten, hanhDong: 'Nạp tiền', soTien: yeuCau.soTien, thoiGian: new Date().toLocaleString('vi-VN') });
+            localStorage.setItem('proxyUsers', JSON.stringify(danhSachTaiKhoan));
+            localStorage.setItem('proxyDeposit', JSON.stringify(yeuCauNap));
+            localStorage.setItem('proxyHistory', JSON.stringify(lichSuGiaoDich));
+            taiDuLieuBaoMat();
+            hienThongBao(`Đã cộng ${yeuCau.soTien.toLocaleString('vi-VN')}đ cho ${yeuCau.ten}`);
+        }
+        function guiKey(id) {
+            const keyText = document.getElementById(`key_${id}`).value.trim();
+            if (!keyText) return hienThongBao('Vui lòng nhập key trước khi gửi', 'canhbao');
+            const dh = donHang.find(i => i.id === id);
+            const tk = danhSachTaiKhoan.find(u => u.ten === dh.ten);
+            dh.trangThai = 'da_gui';
+            if (!tk.keys) tk.keys = [];
+            tk.keys.push({ loai: dh.loaiGoi, key: keyText, thoiGian: new Date().toLocaleString('vi-VN') });
+            localStorage.setItem('proxyUsers', JSON.stringify(danhSachTaiKhoan));
+            localStorage.setItem('proxyOrders', JSON.stringify(donHang));
+            taiDuLieuBaoMat();
+            hienThongBao(`Đã gửi key thành công cho ${dh.ten}`);
+        }
+    </script>
+</body>
+</html>
